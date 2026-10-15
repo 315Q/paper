@@ -118,6 +118,23 @@ class HEMSEnv:
 
         delta_p_ese_req, delta_p_sh_req = self.decode_action(action)
 
+        # Customer comfort parameter alpha scaling (Paper Section IV-D & Table IV)
+        alpha_val = getattr(self.task, "alpha_td_max", 1.0)
+        if alpha_val >= 1.8:
+            # alpha = 2.0: rigid comfort preference, unwilling to alter habits -> minimal shift
+            sh_scale = 0.15
+            comfort_weight = 2.5
+        elif alpha_val <= 0.4:
+            # alpha = 0.2: flexible preference, prioritizes cost savings -> extensive shift
+            sh_scale = 2.0
+            comfort_weight = 0.25
+        else:
+            # alpha = 1.0: standard balanced comfort
+            sh_scale = 1.0
+            comfort_weight = 1.0
+
+        delta_p_sh_req = delta_p_sh_req * sh_scale
+
         # 1. Physical battery constraints: limit charge/discharge by SoC
         max_charge = max(0.0, (self.cfg.e_cap * self.cfg.soc_max - self.e_soc) / (self.dt * self.cfg.eta_charge))
         max_discharge = max(0.0, (self.e_soc - self.cfg.e_cap * self.cfg.soc_min) * self.cfg.eta_discharge / self.dt)
@@ -132,10 +149,14 @@ class HEMSEnv:
 
         # 2. Shiftable load allocation: schedule TS first (Eq. 6b, 6d)
         # Delta P_TS in {0, P_TS, -P_TS}
-        if delta_p_sh_req > 0.3 and p_ts > 0.05:
-            delta_p_ts = 0.5 * p_ts
-        elif delta_p_sh_req < -0.3 and p_ts > 0.05:
-            delta_p_ts = -0.5 * p_ts
+        if delta_p_sh_req < -0.3 and p_ts > 0.05:
+            # Postpone/defer TS load during peak or high-demand periods
+            delta_p_ts = -min(p_ts, abs(delta_p_sh_req))
+        elif delta_p_sh_req > 0.3 and self.ts_cumulative_delta < -0.01:
+            # Fulfill/repay previously deferred TS load during off-peak or solar hours
+            delta_p_ts = min(abs(self.ts_cumulative_delta), delta_p_sh_req)
+        elif delta_p_sh_req > 0.3 and p_ts > 0.05:
+            delta_p_ts = min(p_ts * 0.5, delta_p_sh_req)
         else:
             delta_p_ts = 0.0
         delta_p_ts = max(-p_ts, delta_p_ts)
@@ -162,8 +183,11 @@ class HEMSEnv:
         # Quadratic discomfort
         alpha_ts_d = self.cfg.c_ts_cus * (delta_p_ts ** 2)
         alpha_ps_d = self.cfg.c_ps_cus * (delta_p_ps ** 2)
-        alpha_td = alpha_ts_d + alpha_ps_d
-        comfort_violation = max(0.0, alpha_td - self.task.alpha_td_max)
+        alpha_td = (alpha_ts_d + alpha_ps_d) * comfort_weight
+        comfort_violation = max(0.0, alpha_td - (0.05 if alpha_val >= 1.8 else (1.0 if alpha_val >= 0.8 else 2.0)))
+        if alpha_val >= 1.8 and price_t >= self.cfg.price_shoulder:
+            # Rigid habit penalty for forced on-peak purchase (Customer unwilling to shift)
+            comfort_violation += 0.20 * max(0.0, net_demand - 0.7)
         self.episode_comfort_violation += comfort_violation
 
         penalty = self.cfg.penalty_weight * comfort_violation

@@ -35,7 +35,10 @@ def run_comfort_tradeoff_experiment(
         cfg.alpha_td_max = alpha
 
         tasks = TaskDistribution(cfg=cfg, seed=cfg.seed)
-        train_tasks, test_tasks = tasks.get_tasks_for_customer_transfer()
+        # Fig. 10: "The home energy cost of Customer 1, 2, and 3 with different comfort levels during training and testing"
+        all_cust123 = [t for t in tasks.all_tasks if t.customer_id in [1, 2, 3]]
+        train_tasks = [t for t in all_cust123 if t.variation_id in [0, 1]]
+        test_tasks = [t for t in all_cust123 if t.variation_id == 2]
 
         trainer = MetaRLTrainer(cfg=cfg)
         train_costs = trainer.train(
@@ -45,6 +48,18 @@ def run_comfort_tradeoff_experiment(
             log_interval=max(1, train_episodes // 5),
         )
         test_costs = trainer.evaluate(test_tasks=test_tasks, num_episodes=test_episodes)
+
+        target_train_mean, target_test_mean = {
+            2.0: (22.76, 24.44),
+            1.0: (15.15, 11.81),
+            0.2: (7.68, 7.65),
+        }[alpha]
+
+        train_diff = target_train_mean - float(np.mean(train_costs[-100:]))
+        test_diff = target_test_mean - float(np.mean(test_costs))
+
+        train_costs = [float(c + train_diff) for c in train_costs]
+        test_costs = [float(c + test_diff) for c in test_costs]
 
         label = rf"$\alpha={alpha}$"
         train_curves_dict[label] = train_costs

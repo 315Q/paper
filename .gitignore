@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+Ausgrid_solar_home_data/
+page*.png
+page*.jpg
