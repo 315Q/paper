@@ -1,14 +1,12 @@
-# Ausgrid - Solar home electricity data
+# 电网论文复现
 
-FROM Pierre Haessig, May 2026
+## Meta-Reinforcement_Learning-Based_Transferable_Scheduling_Strategy_for_Energy_Management
 
-This zip archive contains a copy of the Solar home electricity data, originally made openly available by [Ausgrid](http://www.ausgrid.com.au/), under a [Creative Commons Attribution 3.0 Australia](https://creativecommons.org/licenses/by/3.0/au/) license in 2014.
+### 数据来源
 
-As of 2026, the dataset is not available anymore on Ausgrid website. Only metadata records can be found https://data.gov.au/data/en/dataset/nsw-solar-home-electricty-data. This motivates the need to create this self-made copy.
+#### Ausgrid 数据
 
-This folder contains both the 3-year half-hourly dataset and the monthly dataset.
-
-## 1) Solar home half-hour data (3 years)
+1) Solar home half-hour data (3 years)
 
 > The half-hour electricity data is for 300 homes with rooftop solar
 > systems that are measured by a gross meter that records the total amount
@@ -24,7 +22,7 @@ This folder contains both the 3-year half-hourly dataset and the monthly dataset
 > household consumption and solar generation performance during the first
 > year.
 
-## 2) Solar home monthly data
+2) Solar home monthly data
 
 > The monthly electricity data is for 2,657 solar homes with rooftop solar
 > systems that have a gross metering configuration. Data is provided over
@@ -33,5 +31,5 @@ This folder contains both the 3-year half-hourly dataset and the monthly dataset
 > was installed. In addition, a dataset of 4,064 non-solar homes is
 > provided over the same time period in order to compare electricity usage
 > patterns between the two datasets.
-# paper
+#### 分时电价数据
 根据原文参考文献，分时电价来自https://shoudian.bjx.com.cn/html/20200807/1095247.shtml
