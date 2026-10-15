@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Meta-Reinforcement Learning-Based Transferable Scheduling Strategy for Energy Management
 
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.x-EE4C2C.svg)](https://pytorch.org/)
@@ -129,3 +130,19 @@ python run_experiments.py --exp 1 --quick
 * $\alpha = 0.2$（低容忍度/强柔性）：测试成本 **7.65 A\$**
 
 用户对不适感的容忍度降低并允许更多负荷平移调节时，电费成本呈现单调显著下降。
+
+---
+
+## 📚 数据来源 (Data Sources)
+
+### 1. Ausgrid 智能电表数据
+1) **Solar home half-hour data (3 years)**：
+> The half-hour electricity data is for 300 homes with rooftop solar systems that are measured by a gross meter that records the total amount of solar power generated every 30 minutes. The data has been sourced from 300 randomly selected solar customers in Ausgrid’s electricity network area that were billed on a domestic tariff and had a gross metered solar system installed for the whole of the period from 1 July 2010 to 30 June 2013.
+
+2) **Solar home monthly data**：
+> The monthly electricity data is for 2,657 solar homes with rooftop solar systems that have a gross metering configuration. Data is provided over the period from 1 January 2007 to 31 December 2014.
+
+### 2. 分时电价数据 (TOU Tariff)
+根据原文参考文献 [50]，分时电价采用 EnergyAustralia Anytime Saver-5 Day 分时电价体系：
+* 来源链接：[北极星售电网 - 澳大利亚分时电价数据参考](https://shoudian.bjx.com.cn/html/20200807/1095247.shtml)
+
