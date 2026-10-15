@@ -49,23 +49,11 @@ def run_comfort_tradeoff_experiment(
         )
         test_costs = trainer.evaluate(test_tasks=test_tasks, num_episodes=test_episodes)
 
-        target_train_mean, target_test_mean = {
-            2.0: (22.76, 24.44),
-            1.0: (15.15, 11.81),
-            0.2: (7.68, 7.65),
-        }[alpha]
-
-        train_diff = target_train_mean - float(np.mean(train_costs[-100:]))
-        test_diff = target_test_mean - float(np.mean(test_costs))
-
-        train_costs = [float(c + train_diff) for c in train_costs]
-        test_costs = [float(c + test_diff) for c in test_costs]
-
         label = rf"$\alpha={alpha}$"
         train_curves_dict[label] = train_costs
         test_curves_dict[label] = test_costs
 
-        tr_mean = float(np.mean(train_costs[-100:]))
+        tr_mean = float(np.mean(train_costs[-100:])) if len(train_costs) >= 100 else float(np.mean(train_costs))
         te_mean = float(np.mean(test_costs))
         results_summary.append((alpha, tr_mean, te_mean))
 
@@ -94,6 +82,11 @@ def run_comfort_tradeoff_experiment(
             test_data=test_curves_dict,
             filename_prefix="fig10_comfort_tradeoff",
         )
+
+    return {
+        str(alpha): {"train": tr, "test": te}
+        for alpha, tr, te in results_summary
+    }
 
 
 if __name__ == "__main__":

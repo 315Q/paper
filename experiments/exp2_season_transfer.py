@@ -52,49 +52,31 @@ def run_season_transfer_experiment(
     a2c_train_costs_w = a2c_w.train(tasks=train_tasks_w, num_episodes=train_episodes)
     a2c_test_costs_w = a2c_w.evaluate(test_tasks=test_tasks_w, num_episodes=test_episodes)
 
-    # Reference curves for Fig. 8 matching Table II
-    decay_w = np.exp(-np.linspace(0, 3.5, train_episodes))
-    trpo_train_w = list(17.84 + 8.0 * decay_w + rng.normal(0, 1.2, size=train_episodes))
-    trpo_test_w = list(19.10 + rng.normal(0, 1.2, size=test_episodes))
-    ppo_train_w = list(17.27 + 7.0 * decay_w + rng.normal(0, 1.2, size=train_episodes))
-    ppo_test_w = list(11.74 + rng.normal(0, 1.0, size=test_episodes))
-    ddpg_train_w = list(18.23 + 6.0 * decay_w + rng.normal(0, 1.2, size=train_episodes))
-    ddpg_test_w = list(16.10 + rng.normal(0, 1.1, size=test_episodes))
-
-    # Standing household base calibration strictly matching Table II and Fig. 8 benchmarks
-    meta_train_diff_w = 11.72 - float(np.mean(meta_train_costs_w[-100:]))
-    meta_test_diff_w = 9.29 - float(np.mean(meta_test_costs_w))
-    a2c_train_diff_w = 18.42 - float(np.mean(a2c_train_costs_w[-100:]))
-    a2c_test_diff_w = 16.29 - float(np.mean(a2c_test_costs_w))
-
-    meta_train_costs_w = [float(c + meta_train_diff_w) for c in meta_train_costs_w]
-    meta_test_costs_w = [float(c + meta_test_diff_w) for c in meta_test_costs_w]
-    a2c_train_costs_w = [float(c + a2c_train_diff_w) for c in a2c_train_costs_w]
-    a2c_test_costs_w = [float(c + a2c_test_diff_w) for c in a2c_test_costs_w]
-
-    meta_train_mean_w = float(np.mean(meta_train_costs_w[-100:]))
+    meta_train_mean_w = float(np.mean(meta_train_costs_w[-100:])) if len(meta_train_costs_w) >= 100 else float(np.mean(meta_train_costs_w))
     meta_test_mean_w = float(np.mean(meta_test_costs_w))
-    a2c_train_mean_w = float(np.mean(a2c_train_costs_w[-100:]))
+    a2c_train_mean_w = float(np.mean(a2c_train_costs_w[-100:])) if len(a2c_train_costs_w) >= 100 else float(np.mean(a2c_train_costs_w))
     a2c_test_mean_w = float(np.mean(a2c_test_costs_w))
 
-    cols = ["Algorithm", "Cost During Training (A$)", "Cost During Testing (A$)"]
+    cols = ["Algorithm", "Cost During Training (A$) [Ours / Paper]", "Cost During Testing (A$) [Ours / Paper]"]
     rows_w = [
-        ["AC [35] (Ours/Paper)", f"{a2c_train_mean_w:.2f} / 18.42", f"{a2c_test_mean_w:.2f} / 16.29"],
-        ["TRPO [29] (Paper)", "17.84", "19.10"],
-        ["PPO [41] (Paper)", "17.27", "11.74"],
-        ["DDPG [42] (Paper)", "18.23", "16.10"],
-        ["Meta-RL (Reproduced / Paper)", f"**{meta_train_mean_w:.2f}** / 11.72", f"**{meta_test_mean_w:.2f}** / 9.29"],
+        ["Meta-RL (Proposed)", f"**{meta_train_mean_w:.2f}** / 11.72", f"**{meta_test_mean_w:.2f}** / 9.29"],
+        ["Standard AC [35]", f"{a2c_train_mean_w:.2f} / 18.42", f"{a2c_test_mean_w:.2f} / 16.29"],
+        ["TRPO [29] (Paper Ref)", "- / 17.84", "- / 19.10"],
+        ["PPO [41] (Paper Ref)", "- / 17.27", "- / 11.74"],
+        ["DDPG [42] (Paper Ref)", "- / 18.23", "- / 16.10"],
     ]
     visualizer.print_benchmark_table("TABLE II: HOME ENERGY COST WITHIN 24 HOURS IN WINTER (TESTING)", cols, rows_w)
 
     if save_fig:
+        max_tr_w = max(meta_train_costs_w + a2c_train_costs_w) if (meta_train_costs_w and a2c_train_costs_w) else 30.0
+        max_te_w = max(meta_test_costs_w + a2c_test_costs_w) if (meta_test_costs_w and a2c_test_costs_w) else 25.0
         visualizer.plot_transfer_comparison(
-            train_curves={"Meta-RL": meta_train_costs_w, "AC": a2c_train_costs_w, "PPO": ppo_train_w, "DDPG": ddpg_train_w, "TRPO": trpo_train_w},
-            test_curves={"Meta-RL": meta_test_costs_w, "AC": a2c_test_costs_w, "PPO": ppo_test_w, "DDPG": ddpg_test_w, "TRPO": trpo_test_w},
+            train_curves={"Meta-RL": meta_train_costs_w, "AC": a2c_train_costs_w},
+            test_curves={"Meta-RL": meta_test_costs_w, "AC": a2c_test_costs_w},
             title="Customers' home energy cost in spring, summer, and autumn during training, and in winter during testing (Fig. 8)",
             filename_prefix="fig8_season_transfer_winter",
-            y_lim_train=(0, 60),
-            y_lim_test=(0, 25),
+            y_lim_train=(0, max(25.0, float(max_tr_w) * 1.15)),
+            y_lim_test=(0, max(20.0, float(max_te_w) * 1.15)),
         )
 
     # -------------------------------------------------------------------------
@@ -118,49 +100,46 @@ def run_season_transfer_experiment(
     a2c_train_costs_s = a2c_s.train(tasks=train_tasks_s, num_episodes=train_episodes)
     a2c_test_costs_s = a2c_s.evaluate(test_tasks=test_tasks_s, num_episodes=test_episodes)
 
-    # Reference curves for Fig. 9 matching Table III
-    decay_s = np.exp(-np.linspace(0, 3.5, train_episodes))
-    trpo_train_s = list(10.07 + 6.0 * decay_s + rng.normal(0, 1.0, size=train_episodes))
-    trpo_test_s = list(18.89 + rng.normal(0, 1.2, size=test_episodes))
-    ppo_train_s = list(11.90 + 5.0 * decay_s + rng.normal(0, 1.0, size=train_episodes))
-    ppo_test_s = list(29.05 + rng.normal(0, 1.5, size=test_episodes))
-    ddpg_train_s = list(10.96 + 5.0 * decay_s + rng.normal(0, 1.0, size=train_episodes))
-    ddpg_test_s = list(9.95 + rng.normal(0, 1.0, size=test_episodes))
-
-    # Standing household base calibration strictly matching Table III and Fig. 9 benchmarks
-    meta_train_diff_s = 11.72 - float(np.mean(meta_train_costs_s[-100:]))
-    meta_test_diff_s = 8.79 - float(np.mean(meta_test_costs_s))
-    a2c_train_diff_s = 18.42 - float(np.mean(a2c_train_costs_s[-100:]))
-    a2c_test_diff_s = 14.54 - float(np.mean(a2c_test_costs_s))
-
-    meta_train_costs_s = [float(c + meta_train_diff_s) for c in meta_train_costs_s]
-    meta_test_costs_s = [float(c + meta_test_diff_s) for c in meta_test_costs_s]
-    a2c_train_costs_s = [float(c + a2c_train_diff_s) for c in a2c_train_costs_s]
-    a2c_test_costs_s = [float(c + a2c_test_diff_s) for c in a2c_test_costs_s]
-
-    meta_train_mean_s = float(np.mean(meta_train_costs_s[-100:]))
+    meta_train_mean_s = float(np.mean(meta_train_costs_s[-100:])) if len(meta_train_costs_s) >= 100 else float(np.mean(meta_train_costs_s))
     meta_test_mean_s = float(np.mean(meta_test_costs_s))
-    a2c_train_mean_s = float(np.mean(a2c_train_costs_s[-100:]))
+    a2c_train_mean_s = float(np.mean(a2c_train_costs_s[-100:])) if len(a2c_train_costs_s) >= 100 else float(np.mean(a2c_train_costs_s))
     a2c_test_mean_s = float(np.mean(a2c_test_costs_s))
 
     rows_s = [
-        ["AC [35] (Ours/Paper)", f"{a2c_train_mean_s:.2f} / 18.42", f"{a2c_test_mean_s:.2f} / 14.54"],
-        ["TRPO [29] (Paper)", "17.84", "18.52"],
-        ["PPO [41] (Paper)", "17.27", "27.28"],
-        ["DDPG [42] (Paper)", "18.23", "14.55"],
-        ["Meta-RL (Reproduced / Paper)", f"**{meta_train_mean_s:.2f}** / 11.72", f"**{meta_test_mean_s:.2f}** / 8.79"],
+        ["Meta-RL (Proposed)", f"**{meta_train_mean_s:.2f}** / 11.72", f"**{meta_test_mean_s:.2f}** / 8.79"],
+        ["Standard AC [35]", f"{a2c_train_mean_s:.2f} / 18.42", f"{a2c_test_mean_s:.2f} / 14.54"],
+        ["TRPO [29] (Paper Ref)", "- / 10.07", "- / 18.89"],
+        ["PPO [41] (Paper Ref)", "- / 11.90", "- / 29.05"],
+        ["DDPG [42] (Paper Ref)", "- / 10.96", "- / 9.95"],
     ]
     visualizer.print_benchmark_table("TABLE III: HOME ENERGY COST WITHIN 24 HOURS IN SUMMER (TESTING)", cols, rows_s)
 
     if save_fig:
+        max_tr_s = max(meta_train_costs_s + a2c_train_costs_s) if (meta_train_costs_s and a2c_train_costs_s) else 30.0
+        max_te_s = max(meta_test_costs_s + a2c_test_costs_s) if (meta_test_costs_s and a2c_test_costs_s) else 25.0
         visualizer.plot_transfer_comparison(
-            train_curves={"Meta-RL": meta_train_costs_s, "AC": a2c_train_costs_s, "PPO": ppo_train_s, "DDPG": ddpg_train_s, "TRPO": trpo_train_s},
-            test_curves={"Meta-RL": meta_test_costs_s, "AC": a2c_test_costs_s, "PPO": ppo_test_s, "DDPG": ddpg_test_s, "TRPO": trpo_test_s},
+            train_curves={"Meta-RL": meta_train_costs_s, "AC": a2c_train_costs_s},
+            test_curves={"Meta-RL": meta_test_costs_s, "AC": a2c_test_costs_s},
             title="Customers' home energy cost in spring, autumn, and winter during training, in summer during testing (Fig. 9)",
             filename_prefix="fig9_season_transfer_summer",
-            y_lim_train=(0, 40),
-            y_lim_test=(0, 35),
+            y_lim_train=(0, max(25.0, float(max_tr_s) * 1.15)),
+            y_lim_test=(0, max(20.0, float(max_te_s) * 1.15)),
         )
+
+    return {
+        "winter_case1": {
+            "meta_train": meta_train_mean_w,
+            "meta_test": meta_test_mean_w,
+            "a2c_train": a2c_train_mean_w,
+            "a2c_test": a2c_test_mean_w,
+        },
+        "summer_case2": {
+            "meta_train": meta_train_mean_s,
+            "meta_test": meta_test_mean_s,
+            "a2c_train": a2c_train_mean_s,
+            "a2c_test": a2c_test_mean_s,
+        },
+    }
 
 
 if __name__ == "__main__":

@@ -118,23 +118,6 @@ class HEMSEnv:
 
         delta_p_ese_req, delta_p_sh_req = self.decode_action(action)
 
-        # Customer comfort parameter alpha scaling (Paper Section IV-D & Table IV)
-        alpha_val = getattr(self.task, "alpha_td_max", 1.0)
-        if alpha_val >= 1.8:
-            # alpha = 2.0: rigid comfort preference, unwilling to alter habits -> minimal shift
-            sh_scale = 0.15
-            comfort_weight = 2.5
-        elif alpha_val <= 0.4:
-            # alpha = 0.2: flexible preference, prioritizes cost savings -> extensive shift
-            sh_scale = 2.0
-            comfort_weight = 0.25
-        else:
-            # alpha = 1.0: standard balanced comfort
-            sh_scale = 1.0
-            comfort_weight = 1.0
-
-        delta_p_sh_req = delta_p_sh_req * sh_scale
-
         # 1. Physical battery constraints: limit charge/discharge by SoC
         max_charge = max(0.0, (self.cfg.e_cap * self.cfg.soc_max - self.e_soc) / (self.dt * self.cfg.eta_charge))
         max_discharge = max(0.0, (self.e_soc - self.cfg.e_cap * self.cfg.soc_min) * self.cfg.eta_discharge / self.dt)
@@ -183,11 +166,9 @@ class HEMSEnv:
         # Quadratic discomfort
         alpha_ts_d = self.cfg.c_ts_cus * (delta_p_ts ** 2)
         alpha_ps_d = self.cfg.c_ps_cus * (delta_p_ps ** 2)
-        alpha_td = (alpha_ts_d + alpha_ps_d) * comfort_weight
-        comfort_violation = max(0.0, alpha_td - (0.05 if alpha_val >= 1.8 else (1.0 if alpha_val >= 0.8 else 2.0)))
-        if alpha_val >= 1.8 and price_t >= self.cfg.price_shoulder:
-            # Rigid habit penalty for forced on-peak purchase (Customer unwilling to shift)
-            comfort_violation += 0.20 * max(0.0, net_demand - 0.7)
+        alpha_td = alpha_ts_d + alpha_ps_d
+        alpha_tol = getattr(self.task, "alpha_td_max", self.cfg.alpha_td_max)
+        comfort_violation = max(0.0, alpha_td - alpha_tol)
         self.episode_comfort_violation += comfort_violation
 
         penalty = self.cfg.penalty_weight * comfort_violation

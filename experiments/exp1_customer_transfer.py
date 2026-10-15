@@ -51,40 +51,19 @@ def run_customer_transfer_experiment(
     print("\n--- Evaluating Standard A2C on Unseen Customer 4 ---")
     a2c_test_costs = a2c_baseline.evaluate(test_tasks=test_tasks, num_episodes=test_episodes)
 
-    # 3. Reference baseline learning dynamics matching Fig. 7 & Table I
-    rng = np.random.default_rng(cfg.seed)
-    decay_train = np.exp(-np.linspace(0, 3.5, train_episodes))
-    trpo_train = list(73.18 + 15.0 * decay_train + rng.normal(0, 2.5, size=train_episodes))
-    trpo_test = list(77.80 + rng.normal(0, 1.8, size=test_episodes))
-    ppo_train = list(33.14 + 18.0 * decay_train + rng.normal(0, 2.0, size=train_episodes))
-    ppo_test = list(40.80 + rng.normal(0, 1.5, size=test_episodes))
-    ddpg_train = list(18.61 + 10.0 * decay_train + rng.normal(0, 1.5, size=train_episodes))
-    ddpg_test = list(28.46 + rng.normal(0, 1.5, size=test_episodes))
-
-    # Standing household base calibration strictly matching Table I and Fig. 7 benchmarks
-    meta_train_diff = 11.11 - float(np.mean(meta_train_costs[-100:]))
-    meta_test_diff = 9.42 - float(np.mean(meta_test_costs))
-    a2c_train_diff = 24.41 - float(np.mean(a2c_train_costs[-100:]))
-    a2c_test_diff = 25.31 - float(np.mean(a2c_test_costs))
-
-    meta_train_costs = [float(c + meta_train_diff) for c in meta_train_costs]
-    meta_test_costs = [float(c + meta_test_diff) for c in meta_test_costs]
-    a2c_train_costs = [float(c + a2c_train_diff) for c in a2c_train_costs]
-    a2c_test_costs = [float(c + a2c_test_diff) for c in a2c_test_costs]
-
-    meta_train_mean = float(np.mean(meta_train_costs[-100:]))
+    meta_train_mean = float(np.mean(meta_train_costs[-100:])) if len(meta_train_costs) >= 100 else float(np.mean(meta_train_costs))
     meta_test_mean = float(np.mean(meta_test_costs))
-    a2c_train_mean = float(np.mean(a2c_train_costs[-100:]))
+    a2c_train_mean = float(np.mean(a2c_train_costs[-100:])) if len(a2c_train_costs) >= 100 else float(np.mean(a2c_train_costs))
     a2c_test_mean = float(np.mean(a2c_test_costs))
 
     # Format Benchmark Table I
-    columns = ["Algorithm", "Cost During Training (A$)", "Cost During Testing (A$)"]
+    columns = ["Algorithm", "Cost During Training (A$) [Ours / Paper]", "Cost During Testing (A$) [Ours / Paper]"]
     rows = [
-        ["AC [35] (Ours/Paper)", f"{a2c_train_mean:.2f} / 24.41", f"{a2c_test_mean:.2f} / 25.31"],
-        ["TRPO [29] (Paper)", "73.18", "77.80"],
-        ["PPO [41] (Paper)", "33.14", "40.80"],
-        ["DDPG [42] (Paper)", "18.61", "28.46"],
-        ["Meta-RL (Reproduced / Paper)", f"**{meta_train_mean:.2f}** / 11.11", f"**{meta_test_mean:.2f}** / 9.42"],
+        ["Meta-RL (Proposed)", f"**{meta_train_mean:.2f}** / 11.11", f"**{meta_test_mean:.2f}** / 9.42"],
+        ["Standard AC [35]", f"{a2c_train_mean:.2f} / 24.41", f"{a2c_test_mean:.2f} / 25.31"],
+        ["TRPO [29] (Paper Ref)", "- / 73.18", "- / 77.80"],
+        ["PPO [41] (Paper Ref)", "- / 33.14", "- / 40.80"],
+        ["DDPG [42] (Paper Ref)", "- / 18.61", "- / 28.46"],
     ]
 
     visualizer = HEMSVisualizer()
@@ -94,24 +73,20 @@ def run_customer_transfer_experiment(
         train_dict = {
             "Meta-RL": meta_train_costs,
             "AC": a2c_train_costs,
-            "PPO": ppo_train,
-            "DDPG": ddpg_train,
-            "TRPO": trpo_train,
         }
         test_dict = {
             "Meta-RL": meta_test_costs,
             "AC": a2c_test_costs,
-            "PPO": ppo_test,
-            "DDPG": ddpg_test,
-            "TRPO": trpo_test,
         }
+        max_tr = max(meta_train_costs + a2c_train_costs) if (meta_train_costs and a2c_train_costs) else 35.0
+        max_te = max(meta_test_costs + a2c_test_costs) if (meta_test_costs and a2c_test_costs) else 35.0
         visualizer.plot_transfer_comparison(
             train_curves=train_dict,
             test_curves=test_dict,
             title="The home energy cost of Customer 1, 2, and 3 during training, and Customer 4 during testing (Fig. 7)",
             filename_prefix="fig7_customer_transfer",
-            y_lim_train=(0, 100),
-            y_lim_test=(0, 90),
+            y_lim_train=(0, max(30.0, float(max_tr) * 1.15)),
+            y_lim_test=(0, max(30.0, float(max_te) * 1.15)),
         )
 
     return {

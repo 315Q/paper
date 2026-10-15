@@ -1,0 +1,11 @@
+{
+  "mode": "Quick Smoke Test",
+  "train_episodes": 50,
+  "test_episodes": 10,
+  "exp1_customer_transfer": {
+    "meta_train": 14.607853893893498,
+    "meta_test": 3.322482670904042,
+    "a2c_train": 15.735282769804483,
+    "a2c_test": 3.281673515192696
+  }
+}

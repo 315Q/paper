@@ -131,7 +131,8 @@ class HEMSVisualizer:
 
         for label, curve in train_data.items():
             s = get_style(label)
-            ax_train.plot(smooth_curve(curve, 0.92), label=label, color=s["color"], linestyle=s["ls"], linewidth=1.8)
+            x_tr = np.arange(1, len(curve) + 1)
+            ax_train.plot(x_tr, smooth_curve(curve, 0.92), label=label, color=s["color"], linestyle=s["ls"], linewidth=1.8)
         ax_train.set_ylabel("Averaged episode cost (A$)")
         ax_train.set_xlabel("Training Episode")
         ax_train.grid(True)
@@ -139,7 +140,8 @@ class HEMSVisualizer:
 
         for label, curve in test_data.items():
             s = get_style(label)
-            ax_test.plot(smooth_curve(curve, 0.90), label=label, color=s["color"], linestyle=s["ls"], linewidth=1.8)
+            x_te = np.arange(1, len(curve) + 1)
+            ax_test.plot(x_te, smooth_curve(curve, 0.90), label=label, color=s["color"], linestyle=s["ls"], linewidth=1.8)
         ax_test.set_ylabel("Averaged episode cost (A$)")
         ax_test.set_xlabel("Testing Episode")
         ax_test.grid(True)

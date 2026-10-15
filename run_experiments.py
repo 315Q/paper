@@ -37,18 +37,38 @@ def main():
     print(f"   Train Episodes: {train_ep} | Test Episodes: {test_ep}")
     print("*" * 75)
 
+    import json
+    import os
+
+    results_dir = "results"
+    os.makedirs(results_dir, exist_ok=True)
+    all_metrics = {
+        "mode": "Quick Smoke Test" if args.quick else "Full Benchmark",
+        "train_episodes": train_ep,
+        "test_episodes": test_ep,
+    }
+
     if args.exp in ["1", "all"]:
-        run_customer_transfer_experiment(train_episodes=train_ep, test_episodes=test_ep)
+        res1 = run_customer_transfer_experiment(train_episodes=train_ep, test_episodes=test_ep)
+        all_metrics["exp1_customer_transfer"] = res1
 
     if args.exp in ["2", "all"]:
-        run_season_transfer_experiment(train_episodes=train_ep, test_episodes=test_ep)
+        res2 = run_season_transfer_experiment(train_episodes=train_ep, test_episodes=test_ep)
+        all_metrics["exp2_season_transfer"] = res2
 
     if args.exp in ["3", "all"]:
-        run_comfort_tradeoff_experiment(train_episodes=train_ep, test_episodes=test_ep)
+        res3 = run_comfort_tradeoff_experiment(train_episodes=train_ep, test_episodes=test_ep)
+        all_metrics["exp3_comfort_tradeoff"] = res3
+
+    metrics_file = os.path.join(results_dir, "raw_metrics.json")
+    with open(metrics_file, "w", encoding="utf-8") as f:
+        json.dump(all_metrics, f, indent=2)
+    print(f"\n[Artifact] Raw execution metrics saved to: {metrics_file}")
 
     print("\n" + "=" * 75)
     print(">>> ALL SPECIFIED EXPERIMENTS SUCCESSFULLY EXECUTED <<<")
-    print("Check the 'results/' directory for publication-grade figures and logs:")
+    print("Check the 'results/' directory for publication-grade figures, data, and logs:")
+    print("  - results/raw_metrics.json")
     print("  - results/fig7_customer_transfer.png (.pdf)")
     print("  - results/fig8_season_transfer_winter.png (.pdf)")
     print("  - results/fig9_season_transfer_summer.png (.pdf)")
