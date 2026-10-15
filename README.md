@@ -1,11 +1,11 @@
-<<<<<<< HEAD
+
 # Meta-Reinforcement Learning-Based Transferable Scheduling Strategy for Energy Management
 
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.x-EE4C2C.svg)](https://pytorch.org/)
 [![IEEE TCSI 2023](https://img.shields.io/badge/IEEE-TCSI%202023-blue.svg)](https://doi.org/10.1109/TCSI.2023.3240702)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-本项目完整复现了发表于 IEEE Transactions on Circuits and Systems—I: Regular Papers (TCSI, Vol. 70, No. 4, April 2023) 的权威论文：
+本项目复现了发表于 IEEE Transactions on Circuits and Systems—I: Regular Papers (TCSI, Vol. 70, No. 4, April 2023) 的权威论文：
 
 > **"Meta-Reinforcement Learning-Based Transferable Scheduling Strategy for Energy Management"**  
 > *Luolin Xiong, Yang Tang, Chensheng Liu, Shuai Mao, Ke Meng, Zhaoyang Dong, Feng Qian*  
