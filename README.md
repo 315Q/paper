@@ -1,6 +1,6 @@
 # Ausgrid - Solar home electricity data - *archive copy*
 
-Pierre Haessig, May 2026
+FROM Pierre Haessig, May 2026
 
 This zip archive contains a copy of the Solar home electricity data, originally made openly available by [Ausgrid](http://www.ausgrid.com.au/), under a [Creative Commons Attribution 3.0 Australia](https://creativecommons.org/licenses/by/3.0/au/) license in 2014.
 
@@ -8,7 +8,6 @@ As of 2026, the dataset is not available anymore on Ausgrid website. Only metada
 
 This folder contains both the 3-year half-hourly dataset and the monthly dataset.
 
-The original Ausgrid notice [Ausgrid solar home electricity data notes (Aug 2014).pdf](Ausgrid solar home electricity data notes (Aug 2014).pdf) is also available.
 
 ## 1) Solar home half-hour data (3 years)
 
