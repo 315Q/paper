@@ -1,11 +1,39 @@
 {
-  "mode": "Quick Smoke Test",
-  "train_episodes": 50,
-  "test_episodes": 10,
+  "mode": "Full Benchmark",
+  "train_episodes": 300,
+  "test_episodes": 30,
   "exp1_customer_transfer": {
-    "meta_train": 14.607853893893498,
-    "meta_test": 3.322482670904042,
-    "a2c_train": 15.735282769804483,
-    "a2c_test": 3.281673515192696
+    "meta_train": 6.633817106223919,
+    "meta_test": 3.3192287082735503,
+    "a2c_train": 7.082999481417142,
+    "a2c_test": 3.91949407199072
+  },
+  "exp2_season_transfer": {
+    "winter_case1": {
+      "meta_train": 6.142278629950012,
+      "meta_test": 8.265448191588712,
+      "a2c_train": 6.18329506835032,
+      "a2c_test": 12.408965237813971
+    },
+    "summer_case2": {
+      "meta_train": 7.096909121694,
+      "meta_test": 6.467169804043082,
+      "a2c_train": 7.285121436586775,
+      "a2c_test": 7.134957475058667
+    }
+  },
+  "exp3_comfort_tradeoff": {
+    "2.0": {
+      "train": 6.689576827949312,
+      "test": 6.564628786818911
+    },
+    "1.0": {
+      "train": 6.924063098092119,
+      "test": 9.106977948751846
+    },
+    "0.2": {
+      "train": 6.9943672322908945,
+      "test": 6.564628786818911
+    }
   }
 }
