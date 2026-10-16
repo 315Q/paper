@@ -64,6 +64,10 @@ MetaRL_HEMS/
 ```
 
 ---
+## 借鉴OR后续方向？
+找更多相关论文进行资料查找-> 元强化学习的相关应用？是否可以迁移使用？
+LSTM方法寻找现在更加新的处理时序的其他方法看能否替代？
+开题报告的计划以及可行性？
 
 ## 🚀 快速上手与运行
 
@@ -141,6 +145,7 @@ python run_experiments.py --exp 1 --quick
 
 2) **Solar home monthly data**：
 > The monthly electricity data is for 2,657 solar homes with rooftop solar systems that have a gross metering configuration. Data is provided over the period from 1 January 2007 to 31 December 2014.
+
 
 ### 2. 分时电价数据 (TOU Tariff)
 根据原文参考文献 [50]，分时电价采用 EnergyAustralia Anytime Saver-5 Day 分时电价体系：
